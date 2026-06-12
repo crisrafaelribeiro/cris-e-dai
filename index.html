@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1026">
+<title>Cris & Dai — A nossa retrospectiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --shell-max: 460px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --serif: "Fraunces", Georgia, serif;
+  --sans: "Outfit", system-ui, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#05060f;color:#fff;font-family:var(--sans)}
+body{position:fixed;inset:0;overscroll-behavior:none}
+
+/* ---------- PALCO / SHELL ---------- */
+#stage{
+  position:relative;width:100%;height:100%;
+  max-width:var(--shell-max);margin:0 auto;
+  overflow:hidden;background:#05060f;
+  box-shadow:0 0 80px rgba(0,0,0,.6);
+}
+
+/* ---------- SLIDES ---------- */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 26px calc(40px + env(safe-area-inset-bottom));
+  opacity:0;visibility:hidden;
+  transition:opacity .7s var(--ease);
+  background-size:cover;background-position:center;
+  z-index:1;
+}
+.slide.active{opacity:1;visibility:visible;z-index:2}
+.slide .bg{
+  position:absolute;inset:0;z-index:-2;
+  background-size:cover;background-position:center;
+  transform:scale(1.12);
+  transition:transform 7s linear;
+}
+.slide.active .bg{transform:scale(1)}
+.slide .scrim{
+  position:absolute;inset:0;z-index:-1;
+}
+
+/* conteúdo entra de baixo */
+.slide .content > *{
+  opacity:0;transform:translateY(26px);
+}
+.slide.active .content > *{
+  animation:rise .8s var(--ease) forwards;
+}
+.slide.active .content > *:nth-child(1){animation-delay:.25s}
+.slide.active .content > *:nth-child(2){animation-delay:.42s}
+.slide.active .content > *:nth-child(3){animation-delay:.58s}
+.slide.active .content > *:nth-child(4){animation-delay:.74s}
+.slide.active .content > *:nth-child(5){animation-delay:.9s}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+
+.eyebrow{
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  letter-spacing:.32em;text-transform:uppercase;
+  color:rgba(255,255,255,.82);margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:currentColor;opacity:.7}
+.date{
+  font-family:var(--sans);font-weight:500;font-size:14px;
+  letter-spacing:.04em;color:rgba(255,255,255,.9);margin-bottom:6px;
+}
+h1,h2{
+  font-family:var(--serif);font-weight:600;line-height:.96;
+  letter-spacing:-.02em;font-optical-sizing:auto;
+}
+.title{font-size:clamp(40px,12vw,58px);margin-bottom:18px;text-wrap:balance}
+.title em{font-style:italic;font-weight:400}
+.body{
+  font-size:16.5px;line-height:1.55;font-weight:300;
+  color:rgba(255,255,255,.92);max-width:30ch;margin-bottom:8px;
+}
+.body strong{font-weight:600}
+.stat{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:15px;color:rgba(255,255,255,.78);margin-top:6px;
+}
+
+/* ---------- BARRA DE PROGRESSO (STORIES) ---------- */
+#bars{
+  position:absolute;top:calc(12px + env(safe-area-inset-top));
+  left:14px;right:14px;z-index:40;
+  display:flex;gap:5px;
+}
+.bar{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden}
+.bar > span{display:block;height:100%;width:0;background:#fff;border-radius:3px}
+.bar.done > span{width:100%}
+.bar.active > span{animation:fill var(--dur,7s) linear forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+body.paused .bar.active > span{animation-play-state:paused}
+
+/* topo: nome do casal */
+#brand{
+  position:absolute;top:calc(34px + env(safe-area-inset-top));
+  left:18px;z-index:35;text-align:left;
+  font-family:var(--serif);font-style:italic;font-size:15px;
+  color:rgba(255,255,255,.92);letter-spacing:.02em;
+  pointer-events:none;text-shadow:0 1px 12px rgba(0,0,0,.5);
+}
+
+/* zonas de toque */
+.tapzone{position:absolute;top:0;bottom:0;width:38%;z-index:20}
+#tapPrev{left:0}#tapNext{right:0}
+
+/* ---------- PLAYER DE MÚSICA (TOPO, COMPACTO) ---------- */
+#player{
+  position:absolute;
+  top:calc(30px + env(safe-area-inset-top));
+  right:14px;
+  z-index:38;display:flex;align-items:center;gap:9px;
+  padding:6px 8px 6px 8px;border-radius:30px;max-width:60%;
+  background:rgba(12,14,28,.42);backdrop-filter:blur(16px) saturate(1.4);
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.16);
+  transition:opacity .5s, transform .5s;
+}
+#cover{
+  width:28px;height:28px;border-radius:9px;flex:none;position:relative;
+  background:linear-gradient(135deg,#ff5e87,#7d5fff);overflow:hidden;
+}
+#cover .eq{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:6px}
+#cover .eq i{width:2px;background:rgba(255,255,255,.92);border-radius:2px;height:30%}
+body.playing #cover .eq i{animation:eq .9s ease-in-out infinite}
+#cover .eq i:nth-child(2){animation-delay:.2s}
+#cover .eq i:nth-child(3){animation-delay:.4s}
+#cover .eq i:nth-child(4){animation-delay:.1s}
+@keyframes eq{0%,100%{height:25%}50%{height:88%}}
+#meta{flex:1;min-width:0;line-height:1.15}
+#track{font-weight:600;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+#artist{font-size:10px;color:rgba(255,255,255,.66);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#playbtn{
+  width:30px;height:30px;flex:none;border:none;border-radius:50%;
+  background:#fff;color:#11122a;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+#playbtn svg{width:14px;height:14px}
+.ic-pause{display:none}
+body.playing .ic-play{display:none}
+body.playing .ic-pause{display:block}
+
+/* ---------- INTRO ---------- */
+#intro{
+  position:absolute;inset:0;z-index:60;
+  background:radial-gradient(120% 120% at 50% 0%,#1b2150 0%,#0a0d24 55%,#05060f 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;transition:opacity .8s var(--ease);
+}
+#intro.hide{opacity:0;pointer-events:none}
+#intro .kicker{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:22px;animation:rise .9s var(--ease) .1s both}
+#intro h1{font-size:clamp(46px,15vw,72px);margin-bottom:8px;animation:rise 1s var(--ease) .3s both}
+#intro h1 em{font-style:italic;font-weight:300;display:block;font-size:.55em;color:#ffb3c7;margin-top:8px}
+#intro p{font-weight:300;color:rgba(255,255,255,.78);font-size:15px;max-width:26ch;line-height:1.5;margin:18px 0 34px;animation:rise 1s var(--ease) .5s both}
+#startbtn{
+  font-family:var(--sans);font-weight:600;font-size:15px;letter-spacing:.02em;
+  color:#11122a;background:#fff;border:none;border-radius:40px;
+  padding:16px 38px;cursor:pointer;animation:rise 1s var(--ease) .7s both;
+  box-shadow:0 12px 40px rgba(255,140,170,.3);
+  display:inline-flex;align-items:center;gap:10px;
+}
+#startbtn:active{transform:scale(.97)}
+.heart-pulse{display:inline-block;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+
+/* ---------- HINT toque ---------- */
+#hint{
+  position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:30;text-align:center;font-size:12px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(255,255,255,.7);
+  pointer-events:none;transition:opacity .6s;
+}
+#hint.gone{opacity:0}
+
+/* ---------- FINAL ---------- */
+.final{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+.final .content{text-align:center;align-items:center;width:100%}
+.final .body{max-width:34ch;margin-left:auto;margin-right:auto}
+#replay{
+  margin-top:22px;font-family:var(--sans);font-weight:600;font-size:14px;
+  color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);
+  border-radius:40px;padding:13px 28px;cursor:pointer;backdrop-filter:blur(8px);
+}
+#replay:active{transform:scale(.97)}
+
+/* floating hearts */
+.fhearts{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.fhearts span{position:absolute;bottom:-30px;font-size:18px;opacity:0;animation:floatUp linear infinite}
+@keyframes floatUp{
+  0%{transform:translateY(0) scale(.7);opacity:0}
+  12%{opacity:.85}
+  100%{transform:translateY(-115vh) scale(1.1);opacity:0}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001s !important;transition-duration:.2s !important}
+  .slide .bg{transform:none !important}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- progresso -->
+  <div id="bars"></div>
+  <div id="brand">Cris &amp; Dai</div>
+
+  <!-- SLIDES injetados via JS -->
+  <div id="slides"></div>
+
+  <!-- zonas de toque -->
+  <div class="tapzone" id="tapPrev"></div>
+  <div class="tapzone" id="tapNext"></div>
+
+  <div id="hint">toque para avançar · segure para pausar</div>
+
+  <!-- player -->
+  <div id="player">
+    <div id="cover"><div class="eq"><i></i><i></i><i></i><i></i></div></div>
+    <div id="meta">
+      <div id="track">Wherever You Will Go</div>
+      <div id="artist">The Calling</div>
+    </div>
+    <button id="playbtn" aria-label="Tocar ou pausar a música">
+      <svg class="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+    </button>
+  </div>
+
+  <!-- intro -->
+  <div id="intro">
+    <div class="kicker">Uma retrospectiva da nossa história</div>
+    <h1>Nós dois<em>de 2004 até hoje</em></h1>
+    <p>21 anos depois daquele primeiro olhar, aqui está a playlist da nossa vida. Coloca no som e vem comigo.</p>
+    <button id="startbtn"><span class="heart-pulse">❤</span> Começar a viagem</button>
+  </div>
+
+  <audio id="audio" loop playsinline preload="auto">
+    <!-- Coloque seu arquivo aqui. Ex: nossa-musica.mp3 na mesma pasta -->
+    <source src="nossa-musica.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<script>
+/* ====================== DADOS DA RETROSPECTIVA ====================== */
+const STORY = [
+  {
+    key:"abertura", dur:7000,
+    photo:"fotos/namoro_3.jpg",
+    grad:"linear-gradient(180deg, rgba(8,12,40,.15) 0%, rgba(8,12,40,.55) 55%, rgba(5,7,20,.95) 100%)",
+    eyebrow:"Como tudo começou",
+    title:`Era uma vez <em>a gente</em>`,
+    body:`Antes das filhas, das viagens, da Luluca dormindo no sofá — éramos só dois jovens com o coração acelerado. Essa é a nossa história, contada do jeito que ela merece: com música.`,
+  },
+  {
+    key:"namoro", dur:8000,
+    photo:"fotos/namoro_1.jpg",
+    grad:"linear-gradient(180deg, rgba(11,18,60,.12) 0%, rgba(11,18,60,.5) 50%, rgba(7,10,34,.96) 100%)",
+    eyebrow:"O começo de tudo",
+    date:"24 de abril de 2004",
+    title:`O primeiro <em>sim</em>`,
+    body:`Foi nesse dia que decidimos namorar — e o mundo ficou um pouquinho mais bonito. <strong>The Calling</strong> tocava em todo lugar e parecia que cantava pra gente: <em>"wherever you will go, I will go."</em>`,
+    stat:`Há 21 anos te escolhendo todo dia.`,
+  },
+  {
+    key:"namoro2", dur:7000,
+    photo:"fotos/namoro_2.jpg",
+    grad:"linear-gradient(180deg, rgba(20,16,64,.12) 0%, rgba(20,16,64,.5) 50%, rgba(7,10,34,.96) 100%)",
+    eyebrow:"Os primeiros capítulos",
+    title:`A gente <em>jovem</em>, a gente boba`,
+    body:`Festas, fotos tremidas, aquele friozinho na barriga toda vez que você sorria. Eu já sabia ali: era você. Sempre foi você.`,
+  },
+  {
+    key:"casamento", dur:8500,
+    photo:"fotos/casamento_1.jpg",
+    grad:"linear-gradient(180deg, rgba(60,42,12,.1) 0%, rgba(40,28,10,.5) 50%, rgba(20,14,6,.96) 100%)",
+    eyebrow:"O dia do Sim",
+    date:"15 de junho de 2011",
+    title:`E a gente disse <em>"para sempre"</em>`,
+    body:`Sete anos de namoro depois, virou casamento. <strong>"Foi Deus"</strong> que costurou esse encontro — e a gente só assinou embaixo. Daquele dia em diante, todo "nós" passou a ter peso de eternidade.`,
+    stat:`Casados há mais de uma década.`,
+  },
+  {
+    key:"casamento2", dur:7000,
+    photo:"fotos/casamento_2.jpg",
+    grad:"linear-gradient(180deg, rgba(70,48,16,.1) 0%, rgba(45,30,12,.5) 50%, rgba(20,14,6,.96) 100%)",
+    eyebrow:"A vida a dois",
+    title:`Construindo um <em>lar</em>`,
+    body:`Casa nova, sonhos antigos, planos pra tudo quanto é canto. Cada Natal, cada viagem, cada briga boba — tudo isso era a gente aprendendo a ser família.`,
+  },
+  {
+    key:"bella", dur:9000,
+    photo:"fotos/bella_2.jpg",
+    grad:"linear-gradient(180deg, rgba(255,120,170,.1) 0%, rgba(120,40,80,.5) 52%, rgba(40,12,28,.96) 100%)",
+    eyebrow:"Vem com tudo, Isabella",
+    date:"09 de janeiro de 2015",
+    title:`Chegou a <em>Bella</em>`,
+    body:`A barriga cresceu, o amor também. E num dia de janeiro, o mundo ganhou a <strong>Isabella</strong>. De repente a gente entendeu pra que servia todo aquele "para sempre".`,
+    stat:`Nossa primeira vez de mãe e pai.`,
+  },
+  {
+    key:"bella2", dur:7500,
+    photo:"fotos/bella_1.jpg",
+    grad:"linear-gradient(180deg, rgba(255,140,180,.1) 0%, rgba(130,50,90,.5) 52%, rgba(40,12,28,.96) 100%)",
+    eyebrow:"Virou trio",
+    title:`Três <em>corações</em> batendo juntos`,
+    body:`A Bella encheu a casa de risada, de bagunça e daquele cheirinho de criança feliz. E olhar pra você sendo mãe me fez te amar de um jeito novo.`,
+  },
+  {
+    key:"laura", dur:9000,
+    photo:"fotos/laura_1.jpg",
+    grad:"linear-gradient(180deg, rgba(120,220,255,.1) 0%, rgba(20,90,120,.5) 52%, rgba(8,28,40,.96) 100%)",
+    eyebrow:"E o amor transbordou de novo",
+    date:"18 de fevereiro de 2023",
+    title:`Chegou a <em>Laurinha</em>`,
+    body:`Oito anos depois, a casa pediu mais uma cadeirinha na mesa. A <strong>Laura</strong> chegou pra provar que o coração da gente só faz crescer. Mais uma princesa, mais um motivo.`,
+    stat:`De trio viramos um quarteto.`,
+  },
+  {
+    key:"laura2", dur:7500,
+    photo:"fotos/laura_4.jpg",
+    grad:"linear-gradient(180deg, rgba(255,150,180,.1) 0%, rgba(120,50,80,.5) 52%, rgba(40,14,26,.96) 100%)",
+    eyebrow:"Duas meninas, um amor só",
+    title:`As <em>nossas</em> meninas`,
+    body:`Bella e Laura, irmãs, melhores amigas, nossa maior obra. Toda vez que elas riem juntas, eu lembro de onde tudo começou: em você dizendo sim, lá em 2004.`,
+  },
+  {
+    key:"luluca", dur:7500,
+    photo:"fotos/hoje_3.jpg",
+    grad:"linear-gradient(180deg, rgba(255,200,120,.1) 0%, rgba(120,80,40,.5) 52%, rgba(40,26,12,.96) 100%)",
+    eyebrow:"E também tem nossos bixinhos",
+    title:`<em>Elas</em> também fazem parte da família`,
+    body:`Elas não falam, mas escolheram a gente — e completaram a bagunça gostosa que é o nosso lar.`,
+    stat:`Muito mimadas e amandas por todos nós 🥰.`,
+  },
+  {
+    key:"hoje", dur:9000,
+    photo:"fotos/hoje_1.jpg",
+    grad:"linear-gradient(180deg, rgba(255,160,120,.12) 0%, rgba(150,70,50,.5) 52%, rgba(40,18,12,.96) 100%)",
+    eyebrow:"E aqui estamos",
+    title:`A nossa <em>vida</em> hoje`,
+    body:`Viagens de mão dada, praia com a barriga ao sol, Natal grudados. A vida ficou cheia — do jeito certo. E eu faria tudo de novo, na mesma ordem, com você.`,
+    stat:`O melhor capítulo é sempre o próximo.`,
+  },
+  {
+    key:"final", dur:99999, final:true,
+    photo:"fotos/hoje_4.jpg",
+    grad:"linear-gradient(180deg, rgba(20,16,50,.35) 0%, rgba(20,16,50,.6) 45%, rgba(7,9,26,.96) 100%)",
+    eyebrow:"Feliz Dia dos Namorados",
+    title:`Eu te <em>amo</em>, Dai`,
+    body:`Obrigado por 21 anos de "nós". Por cada sim, cada filha, cada manhã. Que a nossa playlist nunca acabe — e que a próxima faixa seja sempre ao seu lado.<br><br>— Cris`,
+  },
+];
+
+/* ====================== PLAYLIST ====================== */
+const PLAYLIST = [
+  //{t:"Foi Deus", a:"Cupim na Mesa"},
+  {t:"Wherever You Will Go", a:"The Calling"},  
+];
+
+/* ====================== MOTOR DA RETROSPECTIVA ====================== */
+const slidesEl = document.getElementById('slides');
+const barsEl = document.getElementById('bars');
+const intro = document.getElementById('intro');
+const startBtn = document.getElementById('startbtn');
+const hint = document.getElementById('hint');
+const audio = document.getElementById('audio');
+const trackEl = document.getElementById('track');
+const artistEl = document.getElementById('artist');
+
+let current = -1, timer = null, started = false, audioOK = false;
+
+// montar slides + barras
+STORY.forEach((s,i)=>{
+  const div = document.createElement('div');
+  div.className = 'slide' + (s.final ? ' final' : '');
+  div.dataset.i = i;
+  div.innerHTML = `
+    <div class="bg" style="background-image:url('${s.photo}')"></div>
+    <div class="scrim" style="background:${s.grad}"></div>
+    ${s.final ? '<div class="fhearts"></div>' : ''}
+    <div class="content">
+      ${s.eyebrow?`<div class="eyebrow">${s.eyebrow}</div>`:''}
+      ${s.date?`<div class="date">${s.date}</div>`:''}
+      <h1 class="title">${s.title}</h1>
+      <p class="body">${s.body}</p>
+      ${s.stat?`<div class="stat">${s.stat}</div>`:''}
+      ${s.final?`<button id="replay">↺ Ver de novo</button>`:''}
+    </div>`;
+  slidesEl.appendChild(div);
+
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  bar.innerHTML = '<span></span>';
+  barsEl.appendChild(bar);
+});
+
+const slideEls = [...document.querySelectorAll('.slide')];
+const barEls = [...document.querySelectorAll('.bar')];
+
+function spawnHearts(){
+  const box = document.querySelector('.final .fhearts');
+  if(!box) return;
+  const chars = ['❤','💗','✨','💕'];
+  for(let i=0;i<14;i++){
+    const h = document.createElement('span');
+    h.textContent = chars[i%chars.length];
+    h.style.left = Math.random()*100+'%';
+    h.style.animationDuration = (6+Math.random()*6)+'s';
+    h.style.animationDelay = (Math.random()*6)+'s';
+    h.style.fontSize = (14+Math.random()*18)+'px';
+    box.appendChild(h);
+  }
+}
+
+function show(i){
+  if(i<0) i=0;
+  if(i>=STORY.length) i=STORY.length-1;
+  if(i===current) return;
+
+  slideEls.forEach(el=>el.classList.remove('active'));
+  slideEls[i].classList.add('active');
+
+  barEls.forEach((b,bi)=>{
+    b.classList.remove('active','done');
+    b.style.setProperty('--dur', STORY[bi].dur+'ms');
+    if(bi<i) b.classList.add('done');
+  });
+
+  current = i;
+  const s = STORY[i];
+
+  // trilha sonora "muda" conforme a era (visual)
+  updateTrackForSlide(i);
+
+  clearTimeout(timer);
+  if(!s.final){
+    barEls[i].classList.add('active');
+    timer = setTimeout(()=>show(i+1), s.dur);
+  } else {
+    barEls[i].classList.add('done');
+    spawnHearts();
+  }
+}
+
+// associa faixa da playlist a cada fase
+function updateTrackForSlide(i){
+  const k = STORY[i].key;
+  // namoro e abertura: "Wherever You Will Go". Do casamento em diante: "Foi Deus".
+  let idx = (k === 'abertura' || k.startsWith('namoro')) ? 1 : 0;
+  trackEl.textContent = PLAYLIST[idx].t;
+  artistEl.textContent = PLAYLIST[idx].a;
+}
+
+function next(){ if(current < STORY.length-1) show(current+1); }
+function prev(){ if(current > 0) show(current-1); }
+
+/* ---- pausar segurando ---- */
+let holdTimer=null, held=false;
+function pressStart(){
+  held=false;
+  holdTimer=setTimeout(()=>{held=true;document.body.classList.add('paused');clearTimeout(timer);},220);
+}
+function pressEnd(zone){
+  clearTimeout(holdTimer);
+  if(held){
+    held=false;document.body.classList.remove('paused');
+    // retomar o tempo restante de forma simples: reinicia a barra atual
+    const s=STORY[current];
+    if(!s.final){
+      barEls[current].classList.remove('active');void barEls[current].offsetWidth;
+      barEls[current].classList.add('active');
+      clearTimeout(timer);timer=setTimeout(()=>show(current+1),s.dur);
+    }
+    return;
+  }
+  if(zone==='next'){ hideHint(); next(); }
+  else { prev(); }
+}
+function hideHint(){ hint.classList.add('gone'); }
+
+['tapNext','tapPrev'].forEach(id=>{
+  const el=document.getElementById(id);
+  const zone = id==='tapNext'?'next':'prev';
+  el.addEventListener('pointerdown',pressStart);
+  el.addEventListener('pointerup',()=>pressEnd(zone));
+  el.addEventListener('pointerleave',()=>{clearTimeout(holdTimer);});
+});
+
+// teclado (pra testar no desktop)
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){hideHint();next();}
+  if(e.key==='ArrowLeft')prev();
+});
+
+/* ---- player ---- */
+const playbtn = document.getElementById('playbtn');
+function setPlaying(on){
+  document.body.classList.toggle('playing', on);
+}
+function tryPlay(){
+  audio.play().then(()=>{audioOK=true;setPlaying(true);})
+  .catch(()=>{ setPlaying(true); /* modo visual: sem arquivo, mas anima */ });
+}
+playbtn.addEventListener('click',()=>{
+  if(document.body.classList.contains('playing')){
+    audio.pause();setPlaying(false);
+  } else {
+    tryPlay();
+  }
+});
+
+/* ---- iniciar ---- */
+startBtn.addEventListener('click',()=>{
+  if(started) return; started=true;
+  intro.classList.add('hide');
+  tryPlay();
+  show(0);
+  setTimeout(()=>{ if(current>2) hideHint(); }, 9000);
+});
+
+/* replay (delegado) */
+document.addEventListener('click',e=>{
+  if(e.target && e.target.id==='replay'){
+    barEls.forEach(b=>b.classList.remove('done','active'));
+    current=-1; show(0); hint.classList.remove('gone');
+  }
+});
+</script>
+</body>
+</html>
